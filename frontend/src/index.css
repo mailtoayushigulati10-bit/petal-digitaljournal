@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #fdf8f3;
+  --blush: #f5d6d0;
+  --rose: #d98b8b;
+  --rose-deep: #c97070;
+  --sage: #d4e3d0;
+  --ink: #4a3a35;
+  --muted: #8a7a72;
+  --border: #ecdfd6;
+}
+
+body {
+  margin: 0;
+  font-family: 'Quicksand', sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--cream) 0%, #fbeee6 100%);
+  min-height: 100vh;
+}
+
+h1, h2, h3 { font-family: 'DM Serif Display', serif; font-weight: 400; }
+
+.card-soft {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 30px -12px rgba(217, 139, 139, 0.18);
+  padding: 1.5rem;
+}
+
+.input-soft {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  color: var(--ink);
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+.input-soft:focus {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 4px rgba(217, 139, 139, 0.15);
+}
+
+.btn-rose {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--rose), #e09a8a);
+  color: #fff; border: none; cursor: pointer;
+  border-radius: 9999px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600; font-size: 0.95rem; font-family: inherit;
+  box-shadow: 0 6px 16px -6px rgba(217, 139, 139, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+}
+.btn-rose:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -8px rgba(217, 139, 139, 0.6); }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.55rem 1.25rem;
+  font-weight: 500; font-size: 0.9rem; font-family: inherit;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-ghost:hover { background: #faf0eb; }
+
+.tag-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(212, 227, 208, 0.6);
+  color: var(--ink);
+  padding: 0.3rem 0.85rem; border-radius: 9999px;
+  font-size: 0.8rem; font-weight: 500;
+}
