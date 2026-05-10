@@ -1,22 +1,63 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
+
 import Landing from "./pages/Landing";
+
 import Login from "./pages/Login";
+
 import Register from "./pages/Register";
+
 import Feed from "./pages/Feed";
+
 import CreatePost from "./pages/CreatePost";
 
+import VerifyOTP from "./pages/VerifyOTP";
+
 export default function App() {
+
   return (
+
     <BrowserRouter>
+
       <Navbar />
+
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="/create" element={<CreatePost />} />
+
+        <Route
+          path="/"
+          element={<Landing />}
+        />
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
+          path="/register"
+          element={<Register />}
+        />
+
+        <Route
+          path="/verify"
+          element={<VerifyOTP />}
+        />
+
+        <Route
+          path="/feed"
+          element={<Feed />}
+        />
+
+        <Route
+          path="/create"
+          element={<CreatePost />}
+        />
+
       </Routes>
+
     </BrowserRouter>
+
   );
+
 }
