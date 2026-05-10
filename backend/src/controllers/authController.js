@@ -65,7 +65,24 @@ if(existingUsername){
 
     // SEND OTP EMAIL
 
-    await sendOTP(email, otp);
+   console.log("Generated OTP:", otp);
+
+try {
+
+  await sendOTP(email, otp);
+
+  console.log("EMAIL SENT SUCCESSFULLY");
+
+} catch (emailError) {
+
+  console.log("EMAIL ERROR:", emailError);
+
+  return res.status(500).json({
+    message: "Failed to send OTP email",
+    error: emailError.message
+  });
+
+}
 
     res.status(201).json({
       message: "OTP sent to email. Verify account."
