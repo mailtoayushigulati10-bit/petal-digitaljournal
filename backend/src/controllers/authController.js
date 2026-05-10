@@ -26,16 +26,16 @@ exports.register = async (req, res) => {
     }
 
     // CHECK USERNAME
+    const existingUsername =
+await User.findOne({ username });
 
-    const existingUsername = await User.findOne({
-      username
-    });
+if(existingUsername){
 
-    if (existingUsername) {
-      return res.status(400).json({
-        message: "Username already taken"
-      });
-    }
+  return res.status(400).json({
+    message:"Username already taken"
+  });
+
+}
 
     // HASH PASSWORD
 
