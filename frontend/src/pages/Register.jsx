@@ -14,6 +14,8 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
 
+  const [error, setError] = useState("");
+
   const onSubmit = async (e) => {
 
     e.preventDefault();
@@ -24,6 +26,8 @@ export default function Register() {
 
       setLoading(true);
 
+      setError("");
+
       const res = await API.post(
         "/auth/register",
         {
@@ -33,15 +37,16 @@ export default function Register() {
         }
       );
 
-      alert(res.data.message);
-
       navigate("/verify");
 
     } catch (err) {
 
-      alert(
+      setError(
+
         err.response?.data?.message ||
+
         "Registration failed"
+
       );
 
     } finally {
@@ -128,6 +133,24 @@ export default function Register() {
               setPassword(e.target.value)
             }
           />
+
+          {
+            error && (
+
+              <p
+                style={{
+                  color: "#b23b3b",
+                  fontSize: "0.9rem",
+                  textAlign: "center"
+                }}
+              >
+
+                {error}
+
+              </p>
+
+            )
+          }
 
           <button
             type="submit"
