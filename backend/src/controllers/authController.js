@@ -1,22 +1,25 @@
+
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendOTP } = require("../utils/sendEmail");
 
+// TEMPORARY STORAGE FOR PENDING USERS
+const pendingUsers = {};
+
+// ================= REGISTER =================
+
 exports.register = async (req, res) => {
 
   try {
 
-    const {
-      username,
-      email,
-      password
-    } = req.body;
+    const { username, email, password } = req.body;
 
-    // CHECK EMAIL
+    // CHECK ONLY VERIFIED EMAILS
 
     const existingEmail = await User.findOne({
-      email
+      email,
+      isVerified: true
     });
 
     if (existingEmail) {
@@ -25,17 +28,18 @@ exports.register = async (req, res) => {
       });
     }
 
-    // CHECK USERNAME
-    const existingUsername =
-await User.findOne({ username });
+    // CHECK ONLY VERIFIED USERNAMES
 
-if(existingUsername){
+    const existingUsername = await User.findOne({
+      username,
+      isVerified: true
+    });
 
-  return res.status(400).json({
-    message:"Username already taken"
-  });
-
-}
+    if (existingUsername) {
+      return res.status(400).json({
+        message: "Username already taken"
+      });
+    }
 
     // HASH PASSWORD
 
@@ -47,9 +51,11 @@ if(existingUsername){
       100000 + Math.random() * 900000
     ).toString();
 
-    // CREATE USER
+    console.log("Generated OTP:", otp);
 
-    const user = await User.create({
+    // STORE TEMP USER
+
+    pendingUsers[email] = {
 
       username,
 
@@ -61,28 +67,26 @@ if(existingUsername){
 
       otpExpiry: Date.now() + 5 * 60 * 1000
 
-    });
+    };
 
-    // SEND OTP EMAIL
+    // SEND OTP
 
-   console.log("Generated OTP:", otp);
+    try {
 
-try {
+      await sendOTP(email, otp);
 
-  await sendOTP(email, otp);
+      console.log("EMAIL SENT SUCCESSFULLY");
 
-  console.log("EMAIL SENT SUCCESSFULLY");
+    } catch (emailError) {
 
-} catch (emailError) {
+      console.log("EMAIL ERROR:", emailError);
 
-  console.log("EMAIL ERROR:", emailError);
+      return res.status(500).json({
+        message: "Failed to send OTP email",
+        error: emailError.message
+      });
 
-  return res.status(500).json({
-    message: "Failed to send OTP email",
-    error: emailError.message
-  });
-
-}
+    }
 
     res.status(201).json({
       message: "OTP sent to email. Verify account."
@@ -98,43 +102,59 @@ try {
 
 };
 
+// ================= VERIFY OTP =================
+
 exports.verifyOTP = async (req, res) => {
 
   try {
 
-    const {
-      email,
-      otp
-    } = req.body;
+    const { email, otp } = req.body;
 
-    const user = await User.findOne({ email });
+    const pendingUser = pendingUsers[email];
 
-    if (!user) {
+    if (!pendingUser) {
       return res.status(400).json({
-        message: "User not found"
+        message: "No pending registration found"
       });
     }
 
-    if (user.otp !== otp) {
+    // CHECK OTP
+
+    if (pendingUser.otp !== otp) {
       return res.status(400).json({
         message: "Invalid OTP"
       });
     }
 
-    if (user.otpExpiry < Date.now()) {
+    // CHECK OTP EXPIRY
+
+    if (pendingUser.otpExpiry < Date.now()) {
       return res.status(400).json({
         message: "OTP expired"
       });
     }
 
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
+    // CREATE FINAL VERIFIED USER
 
-    await user.save();
+    const user = await User.create({
+
+      username: pendingUser.username,
+
+      email: pendingUser.email,
+
+      password: pendingUser.password,
+
+      isVerified: true
+
+    });
+
+    // REMOVE TEMP USER
+
+    delete pendingUsers[email];
 
     res.json({
-      message: "Email verified successfully"
+      message: "Email verified successfully",
+      user
     });
 
   } catch (err) {
@@ -147,14 +167,13 @@ exports.verifyOTP = async (req, res) => {
 
 };
 
+// ================= LOGIN =================
+
 exports.login = async (req, res) => {
 
   try {
 
-    const {
-      identifier,
-      password
-    } = req.body;
+    const { identifier, password } = req.body;
 
     // LOGIN WITH EMAIL OR USERNAME
 
@@ -192,7 +211,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // TOKEN
+    // GENERATE TOKEN
 
     const token = jwt.sign(
       { id: user._id },
@@ -213,4 +232,5 @@ exports.login = async (req, res) => {
 
   }
 
-};
+}
+
