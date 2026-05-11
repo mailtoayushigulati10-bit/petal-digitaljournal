@@ -12,16 +12,15 @@ export default function Navbar() {
   useEffect(() => {
 
     setUser(
-      localStorage.getItem("petal_user")
+      localStorage.getItem("user")
     );
 
   }, [location.pathname]);
 
   const logout = () => {
 
-    localStorage.removeItem(
-      "petal_user"
-    );
+    localStorage.removeItem("user");
+    
 
     localStorage.removeItem(
       "token"

@@ -1,11 +1,14 @@
-
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { sendOTP } = require("../utils/sendEmail");
 
-// TEMPORARY STORAGE FOR PENDING USERS
-const pendingUsers = {};
+const PendingUser =
+  require("../models/PendingUser");
+
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+
+const { sendOTP } =
+  require("../utils/sendEmail");
 
 // ================= REGISTER =================
 
@@ -13,83 +16,86 @@ exports.register = async (req, res) => {
 
   try {
 
-    const { username, email, password } = req.body;
-
-    // CHECK ONLY VERIFIED EMAILS
-
-    const existingEmail = await User.findOne({
+    const {
+      username,
       email,
-      isVerified: true
-    });
+      password
+    } = req.body;
+
+    // CHECK VERIFIED EMAIL
+
+    const existingEmail =
+      await User.findOne({
+        email
+      });
 
     if (existingEmail) {
+
       return res.status(400).json({
         message: "Email already exists"
       });
+
     }
 
-    // CHECK ONLY VERIFIED USERNAMES
+    // CHECK VERIFIED USERNAME
 
-    const existingUsername = await User.findOne({
-      username,
-      isVerified: true
-    });
+    const existingUsername =
+      await User.findOne({
+        username
+      });
 
     if (existingUsername) {
+
       return res.status(400).json({
         message: "Username already taken"
       });
+
     }
 
     // HASH PASSWORD
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
     // GENERATE OTP
 
     const otp = Math.floor(
+
       100000 + Math.random() * 900000
+
     ).toString();
 
-    console.log("Generated OTP:", otp);
+    // STORE IN PENDING USERS
 
-    // STORE TEMP USER
+    await PendingUser.findOneAndUpdate(
 
-    pendingUsers[email] = {
+      { email },
 
-      username,
+      {
+        username,
+        email,
+        password: hashedPassword,
+        otp,
+        otpExpiry:
+          Date.now() + 5 * 60 * 1000
+      },
 
-      email,
+      {
+        upsert: true,
+        new: true
+      }
 
-      password: hashedPassword,
-
-      otp,
-
-      otpExpiry: Date.now() + 5 * 60 * 1000
-
-    };
+    );
 
     // SEND OTP
 
-    try {
-
-      await sendOTP(email, otp);
-
-      console.log("EMAIL SENT SUCCESSFULLY");
-
-    } catch (emailError) {
-
-      console.log("EMAIL ERROR:", emailError);
-
-      return res.status(500).json({
-        message: "Failed to send OTP email",
-        error: emailError.message
-      });
-
-    }
+    await sendOTP(email, otp);
 
     res.status(201).json({
-      message: "OTP sent to email. Verify account."
+
+      message:
+        "OTP sent to email. Verify account."
+
     });
 
   } catch (err) {
@@ -110,51 +116,72 @@ exports.verifyOTP = async (req, res) => {
 
     const { email, otp } = req.body;
 
-    const pendingUser = pendingUsers[email];
+    const pendingUser =
+      await PendingUser.findOne({
+        email
+      });
 
     if (!pendingUser) {
+
       return res.status(400).json({
-        message: "No pending registration found"
+        message:
+          "No pending registration found"
       });
+
     }
 
     // CHECK OTP
 
     if (pendingUser.otp !== otp) {
+
       return res.status(400).json({
         message: "Invalid OTP"
       });
+
     }
 
     // CHECK OTP EXPIRY
 
-    if (pendingUser.otpExpiry < Date.now()) {
+    if (
+      pendingUser.otpExpiry < Date.now()
+    ) {
+
       return res.status(400).json({
         message: "OTP expired"
       });
+
     }
 
-    // CREATE FINAL VERIFIED USER
+    // CREATE REAL USER
 
     const user = await User.create({
 
-      username: pendingUser.username,
+      username:
+        pendingUser.username,
 
-      email: pendingUser.email,
+      email:
+        pendingUser.email,
 
-      password: pendingUser.password,
+      password:
+        pendingUser.password,
 
       isVerified: true
 
     });
 
-    // REMOVE TEMP USER
+    // DELETE PENDING USER
 
-    delete pendingUsers[email];
+    await PendingUser.deleteOne({
+      email
+    });
 
     res.json({
-      message: "Email verified successfully",
+
+      message:
+        "Email verified successfully",
+
       user
+
     });
 
   } catch (err) {
@@ -173,50 +200,54 @@ exports.login = async (req, res) => {
 
   try {
 
-    const { identifier, password } = req.body;
-
-    // LOGIN WITH EMAIL OR USERNAME
+    const {
+      identifier,
+      password
+    } = req.body;
 
     const user = await User.findOne({
+
       $or: [
+
         { email: identifier },
+
         { username: identifier }
+
       ]
+
     });
 
     if (!user) {
+
       return res.status(400).json({
         message: "User not found"
       });
+
     }
 
-    // CHECK VERIFIED
-
-    if (!user.isVerified) {
-      return res.status(401).json({
-        message: "Please verify email first"
-      });
-    }
-
-    // CHECK PASSWORD
-
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isMatch) {
+
       return res.status(400).json({
-        message: "Invalid credentials"
+        message:
+          "Invalid credentials"
       });
+
     }
 
-    // GENERATE TOKEN
-
     const token = jwt.sign(
+
       { id: user._id },
+
       process.env.JWT_SECRET,
+
       { expiresIn: "7d" }
+
     );
 
     res.json({
@@ -232,5 +263,4 @@ exports.login = async (req, res) => {
 
   }
 
-}
-
+};

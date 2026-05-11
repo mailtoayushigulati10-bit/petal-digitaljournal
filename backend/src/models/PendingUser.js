@@ -1,20 +1,16 @@
 const mongoose = require("mongoose");
 
-const userSchema =
+const pendingUserSchema =
   new mongoose.Schema({
 
     username: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true
+      required: true
     },
 
     email: {
       type: String,
-      required: true,
-      unique: true,
-      lowercase: true
+      required: true
     },
 
     password: {
@@ -22,17 +18,20 @@ const userSchema =
       required: true
     },
 
-    profilePic: {
+    otp: {
       type: String,
-      default: ""
+      required: true
     },
 
-    isVerified: {
-      type: Boolean,
-      default: true
+    otpExpiry: {
+      type: Date,
+      required: true
     }
 
   }, { timestamps: true });
 
 module.exports =
-  mongoose.model("User", userSchema);
+  mongoose.model(
+    "PendingUser",
+    pendingUserSchema
+  );
