@@ -10,6 +10,12 @@ exports.createPost = async (req, res) => {
 
   try {
 
+    console.log("REQ FILE:", req.file);
+
+    console.log("REQ BODY:", req.body);
+
+    console.log("REQ USER:", req.user);
+
     // CHECK FILE
 
     if (!req.file) {
@@ -32,6 +38,8 @@ exports.createPost = async (req, res) => {
         }
 
       );
+
+    console.log("CLOUDINARY:", result);
 
     // CREATE POST
 
@@ -62,6 +70,10 @@ exports.createPost = async (req, res) => {
     );
 
   } catch (err) {
+
+    console.log(
+      "CREATE POST ERROR:"
+    );
 
     console.log(err);
 
