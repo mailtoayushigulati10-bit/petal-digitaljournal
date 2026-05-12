@@ -1,6 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
+import {
 
-import { useEffect, useState } from "react";
+  Link,
+
+  useNavigate
+
+} from "react-router-dom";
+
+import {
+
+  useEffect,
+
+  useState
+
+} from "react";
 
 import API from "../services/api";
 
@@ -8,28 +20,34 @@ function getSpotifyEmbed(url) {
 
   if (!url) return null;
 
-  const m = url.match(
+  const match = url.match(
     /spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/
   );
 
-  return m
-    ? `https://open.spotify.com/embed/${m[1]}/${m[2]}`
+  return match
+
+    ? `https://open.spotify.com/embed/${match[1]}/${match[2]}`
+
     : null;
 
 }
 
 export default function Feed() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] =
+    useState([]);
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] =
+    useState(null);
 
   const [editingId, setEditingId] =
     useState(null);
 
-  const [editedCaption, setEditedCaption] =
+  const [editedCaption,
+    setEditedCaption] =
     useState("");
 
   // FETCH POSTS
@@ -38,7 +56,8 @@ export default function Feed() {
 
     try {
 
-      const res = await API.get("/posts");
+      const res =
+        await API.get("/posts");
 
       setPosts(res.data);
 
@@ -50,10 +69,12 @@ export default function Feed() {
 
   };
 
+  // CHECK LOGIN
+
   useEffect(() => {
 
     const storedUser =
-      JSON.parse(localStorage.getItem("user"));
+      localStorage.getItem("user");
 
     if (!storedUser) {
 
@@ -63,7 +84,10 @@ export default function Feed() {
 
     }
 
-    setUser(storedUser);
+    const parsedUser =
+      JSON.parse(storedUser);
+
+    setUser(parsedUser);
 
     fetchPosts();
 
@@ -71,9 +95,9 @@ export default function Feed() {
 
   // DELETE POST
 
-  const deletePost = async(id)=>{
+  const deletePost = async(id) => {
 
-    try{
+    try {
 
       const token =
         localStorage.getItem("token");
@@ -83,8 +107,9 @@ export default function Feed() {
         `/posts/${id}`,
 
         {
-          headers:{
-            Authorization:`Bearer ${token}`
+          headers: {
+            Authorization:
+              `Bearer ${token}`
           }
         }
 
@@ -92,7 +117,7 @@ export default function Feed() {
 
       fetchPosts();
 
-    }catch(err){
+    } catch (err) {
 
       console.log(err);
 
@@ -100,13 +125,13 @@ export default function Feed() {
 
     }
 
-  }
+  };
 
   // UPDATE POST
 
-  const updatePost = async(id)=>{
+  const updatePost = async(id) => {
 
-    try{
+    try {
 
       const token =
         localStorage.getItem("token");
@@ -116,12 +141,13 @@ export default function Feed() {
         `/posts/${id}`,
 
         {
-          caption:editedCaption
+          caption: editedCaption
         },
 
         {
-          headers:{
-            Authorization:`Bearer ${token}`
+          headers: {
+            Authorization:
+              `Bearer ${token}`
           }
         }
 
@@ -131,7 +157,7 @@ export default function Feed() {
 
       fetchPosts();
 
-    }catch(err){
+    } catch (err) {
 
       console.log(err);
 
@@ -139,7 +165,7 @@ export default function Feed() {
 
     }
 
-  }
+  };
 
   return (
 
@@ -150,6 +176,8 @@ export default function Feed() {
         padding: "2.5rem 1.5rem"
       }}
     >
+
+      {/* TOP */}
 
       <div
         style={{
@@ -188,6 +216,8 @@ export default function Feed() {
 
       </div>
 
+      {/* EMPTY */}
+
       {
 
         posts.length === 0 ? (
@@ -200,7 +230,11 @@ export default function Feed() {
             }}
           >
 
-            <div style={{ fontSize: "2.25rem" }}>
+            <div
+              style={{
+                fontSize: "2.25rem"
+              }}
+            >
               🌼
             </div>
 
@@ -211,7 +245,8 @@ export default function Feed() {
               }}
             >
 
-              no petals yet — plant your first memory.
+              no petals yet —
+              plant your first memory.
 
             </p>
 
@@ -247,6 +282,11 @@ export default function Feed() {
                 const embed =
                   getSpotifyEmbed(p.song);
 
+                const isOwner =
+
+                  user?._id ===
+                  p.user?._id;
+
                 return (
 
                   <article
@@ -270,10 +310,12 @@ export default function Feed() {
                           width: 36,
                           height: 36,
                           borderRadius: "50%",
-                          background: "var(--blush)",
+                          background:
+                            "var(--blush)",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
+                          justifyContent:
+                            "center",
                           fontSize: "0.9rem",
                           fontWeight: 600,
                           color: "var(--ink)"
@@ -281,8 +323,12 @@ export default function Feed() {
                       >
 
                         {
+
                           p.user?.username?.[0]
-                          ?.toUpperCase() || "P"
+                          ?.toUpperCase()
+
+                          || "P"
+
                         }
 
                       </div>
@@ -308,9 +354,11 @@ export default function Feed() {
                         >
 
                           {
+
                             new Date(
                               p.createdAt
                             ).toLocaleDateString()
+
                           }
 
                         </div>
@@ -330,7 +378,8 @@ export default function Feed() {
                           alt={p.caption}
                           style={{
                             width: "100%",
-                            borderRadius: "0.75rem",
+                            borderRadius:
+                              "0.75rem",
                             objectFit: "cover",
                             maxHeight: 420
                           }}
@@ -340,7 +389,7 @@ export default function Feed() {
 
                     }
 
-                    {/* CAPTION */}
+                    {/* EDIT MODE */}
 
                     {
 
@@ -348,36 +397,28 @@ export default function Feed() {
 
                         <div
                           style={{
-                            marginTop:"1rem"
+                            marginTop: "1rem"
                           }}
                         >
 
                           <input
-
                             className="input-soft"
-
                             value={editedCaption}
-
-                            onChange={(e)=>
+                            onChange={(e) =>
                               setEditedCaption(
                                 e.target.value
                               )
                             }
-
                           />
 
                           <button
-
                             className="btn-rose"
-
                             style={{
-                              marginTop:"0.75rem"
+                              marginTop: "0.75rem"
                             }}
-
-                            onClick={()=>
+                            onClick={() =>
                               updatePost(p._id)
                             }
-
                           >
 
                             save
@@ -390,10 +431,13 @@ export default function Feed() {
 
                         <>
 
+                          {/* CAPTION */}
+
                           <p
                             style={{
                               marginTop: "0.75rem",
-                              color: "var(--ink)"
+                              color:
+                                "var(--ink)"
                             }}
                           >
 
@@ -401,32 +445,33 @@ export default function Feed() {
 
                           </p>
 
+                          {/* OWNER BUTTONS */}
+
                           {
 
-                            user?._id === p.user?._id && (
+                            isOwner && (
 
                               <div
                                 style={{
-                                  display:"flex",
-                                  gap:"0.75rem",
-                                  marginTop:"1rem"
+                                  display: "flex",
+                                  gap: "0.75rem",
+                                  marginTop: "1rem"
                                 }}
                               >
 
                                 <button
-
                                   className="btn-rose"
+                                  onClick={() => {
 
-                                  onClick={()=>{
-
-                                    setEditingId(p._id);
+                                    setEditingId(
+                                      p._id
+                                    );
 
                                     setEditedCaption(
                                       p.caption
                                     );
 
                                   }}
-
                                 >
 
                                   edit
@@ -434,13 +479,12 @@ export default function Feed() {
                                 </button>
 
                                 <button
-
                                   className="btn-rose"
-
-                                  onClick={()=>
-                                    deletePost(p._id)
+                                  onClick={() =>
+                                    deletePost(
+                                      p._id
+                                    )
                                   }
-
                                 >
 
                                   delete
@@ -466,22 +510,17 @@ export default function Feed() {
                       embed && (
 
                         <iframe
-
                           src={embed}
-
-                          title="song"
-
+                          title="spotify"
                           height="80"
-
                           style={{
                             marginTop: "0.75rem",
                             width: "100%",
-                            borderRadius: "0.75rem",
+                            borderRadius:
+                              "0.75rem",
                             border: 0
                           }}
-
                           allow="encrypted-media"
-
                         />
 
                       )

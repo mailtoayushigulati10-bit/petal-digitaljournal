@@ -1,45 +1,69 @@
-const Post = require("../models/Post");
+const Post =
+  require("../models/Post");
 
-const cloudinary = require("../config/cloudinary");
+const cloudinary =
+  require("../config/cloudinary");
 
-// CREATE POST
+// ================= CREATE POST =================
 
 exports.createPost = async (req, res) => {
 
   try {
+
+    // CHECK FILE
+
     if (!req.file) {
 
-  return res.status(400).json({
-    message: "No file uploaded"
-  });
+      return res.status(400).json({
+        message: "No file uploaded"
+      });
 
-}
+    }
 
-    const result = await cloudinary.uploader.upload(
+    // UPLOAD TO CLOUDINARY
 
-      req.file.path,
+    const result =
+      await cloudinary.uploader.upload(
 
-      {
-        resource_type: "auto"
-      }
+        req.file.path,
 
+        {
+          resource_type: "auto"
+        }
+
+      );
+
+    // CREATE POST
+
+    const post =
+      await Post.create({
+
+        user: req.user.id,
+
+        caption:
+          req.body.caption || "",
+
+        media:
+          result.secure_url,
+
+        song:
+          req.body.song || ""
+
+      });
+
+    // POPULATE USER
+
+    const populatedPost =
+      await Post.findById(post._id)
+      .populate("user");
+
+    res.status(201).json(
+      populatedPost
     );
 
-    const post = await Post.create({
-
-      user: req.user.id,
-
-      caption: req.body.caption,
-
-      media: result.secure_url,
-
-      song: req.body.song
-
-    });
-
-    res.status(201).json(post);
-
   } catch (err) {
+
+    console.log(err);
 
     res.status(500).json({
       error: err.message
@@ -49,21 +73,26 @@ exports.createPost = async (req, res) => {
 
 };
 
-// GET POSTS
+// ================= GET POSTS =================
 
 exports.getPosts = async (req, res) => {
 
   try {
 
-    const posts = await Post.find()
+    const posts =
+      await Post.find()
 
       .populate("user")
 
-      .sort({ createdAt: -1 });
+      .sort({
+        createdAt: -1
+      });
 
     res.json(posts);
 
   } catch (err) {
+
+    console.log(err);
 
     res.status(500).json({
       error: err.message
@@ -73,15 +102,16 @@ exports.getPosts = async (req, res) => {
 
 };
 
-// DELETE POST
+// ================= DELETE POST =================
 
 exports.deletePost = async (req, res) => {
 
   try {
 
-    const post = await Post.findById(
-      req.params.id
-    );
+    const post =
+      await Post.findById(
+        req.params.id
+      );
 
     if (!post) {
 
@@ -91,10 +121,11 @@ exports.deletePost = async (req, res) => {
 
     }
 
-    // only owner can delete
+    // ONLY OWNER CAN DELETE
 
     if (
-      post.user.toString() !== req.user.id
+      post.user.toString() !==
+      req.user.id
     ) {
 
       return res.status(401).json({
@@ -113,6 +144,8 @@ exports.deletePost = async (req, res) => {
 
   } catch (err) {
 
+    console.log(err);
+
     res.status(500).json({
       error: err.message
     });
@@ -121,15 +154,16 @@ exports.deletePost = async (req, res) => {
 
 };
 
-// UPDATE POST
+// ================= UPDATE POST =================
 
 exports.updatePost = async (req, res) => {
 
   try {
 
-    const post = await Post.findById(
-      req.params.id
-    );
+    const post =
+      await Post.findById(
+        req.params.id
+      );
 
     if (!post) {
 
@@ -139,10 +173,11 @@ exports.updatePost = async (req, res) => {
 
     }
 
-    // only owner can edit
+    // ONLY OWNER CAN EDIT
 
     if (
-      post.user.toString() !== req.user.id
+      post.user.toString() !==
+      req.user.id
     ) {
 
       return res.status(401).json({
@@ -157,19 +192,24 @@ exports.updatePost = async (req, res) => {
         req.params.id,
 
         {
-          caption: req.body.caption,
-          song: req.body.song
+          caption:
+            req.body.caption,
+
+          song:
+            req.body.song
         },
 
         {
           new: true
         }
 
-      );
+      ).populate("user");
 
     res.json(updatedPost);
 
   } catch (err) {
+
+    console.log(err);
 
     res.status(500).json({
       error: err.message

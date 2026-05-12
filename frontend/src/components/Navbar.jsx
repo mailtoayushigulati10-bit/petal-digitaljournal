@@ -1,26 +1,56 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {
+
+  Link,
+
+  useLocation,
+
+  useNavigate
+
+} from "react-router-dom";
+
+import {
+
+  useEffect,
+
+  useState
+
+} from "react";
 
 export default function Navbar() {
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] =
+    useState(null);
 
   useEffect(() => {
 
-    setUser(
-      localStorage.getItem("user")
-    );
+    const storedUser =
+      localStorage.getItem("user");
+
+    if (storedUser) {
+
+      setUser(
+        JSON.parse(storedUser)
+      );
+
+    } else {
+
+      setUser(null);
+
+    }
 
   }, [location.pathname]);
 
   const logout = () => {
 
-    localStorage.removeItem("user");
-    
+    localStorage.removeItem(
+      "user"
+    );
 
     localStorage.removeItem(
       "token"
@@ -35,8 +65,7 @@ export default function Navbar() {
   const isActive = (p) =>
     location.pathname === p;
 
-  // HIDE NAV BUTTONS
-  // ON LOGIN / REGISTER / LANDING
+  // HIDE NAVBAR BUTTONS
 
   const hideButtons =
 
@@ -56,9 +85,10 @@ export default function Navbar() {
         top: 0,
         zIndex: 40,
         backdropFilter: "blur(10px)",
-        background: "rgba(255,255,255,0.7)",
+        background:
+          "rgba(255,255,255,0.7)",
         borderBottom:
-          "1px solid var(--border)",
+          "1px solid var(--border)"
       }}
     >
 
@@ -68,8 +98,9 @@ export default function Navbar() {
           margin: "0 auto",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          padding: "1rem 1.5rem",
+          justifyContent:
+            "space-between",
+          padding: "1rem 1.5rem"
         }}
       >
 
@@ -114,6 +145,7 @@ export default function Navbar() {
         </Link>
 
         {
+
           !hideButtons && user && (
 
             <div
@@ -127,9 +159,13 @@ export default function Navbar() {
               <Link
                 to="/feed"
                 className={
+
                   isActive("/feed")
+
                     ? "btn-rose"
+
                     : "btn-ghost"
+
                 }
               >
                 feed
@@ -138,9 +174,13 @@ export default function Navbar() {
               <Link
                 to="/create"
                 className={
+
                   isActive("/create")
+
                     ? "btn-rose"
+
                     : "btn-ghost"
+
                 }
               >
                 + new
@@ -156,6 +196,7 @@ export default function Navbar() {
             </div>
 
           )
+
         }
 
       </div>

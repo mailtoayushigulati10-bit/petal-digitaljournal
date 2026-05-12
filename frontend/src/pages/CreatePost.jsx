@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+
 import { useEffect, useState } from "react";
 
 import API from "../services/api";
@@ -7,30 +8,40 @@ export default function CreatePost() {
 
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] =
+    useState(null);
 
-  const [image, setImage] = useState("");
+  const [image, setImage] =
+    useState("");
 
-  const [file, setFile] = useState(null);
+  const [file, setFile] =
+    useState(null);
 
-  const [caption, setCaption] = useState("");
+  const [caption, setCaption] =
+    useState("");
 
-  const [song, setSong] = useState("");
+  const [song, setSong] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
 
   useEffect(() => {
 
-    const u =
-      JSON.parse(localStorage.getItem("user"));
+    const storedUser =
+      localStorage.getItem("user");
 
-    if (!u) {
+    if (!storedUser) {
 
       navigate("/login");
 
-    } else {
-
-      setUser(u);
+      return;
 
     }
+
+    setUser(
+      JSON.parse(storedUser)
+    );
 
   }, [navigate]);
 
@@ -40,7 +51,8 @@ export default function CreatePost() {
 
     setFile(f);
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
     reader.onload = () => {
 
@@ -58,24 +70,46 @@ export default function CreatePost() {
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       if (!file) {
 
-        alert("Please upload an image");
+        alert(
+          "Please upload an image"
+        );
 
         return;
 
       }
 
-      const formData = new FormData();
+      const token =
+        localStorage.getItem("token");
 
-      formData.append("media", file);
+      if (!token) {
 
-      formData.append("caption", caption);
+        navigate("/login");
 
-      formData.append("song", song);
+        return;
+
+      }
+
+      setLoading(true);
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "media",
+        file
+      );
+
+      formData.append(
+        "caption",
+        caption
+      );
+
+      formData.append(
+        "song",
+        song
+      );
 
       await API.post(
 
@@ -85,9 +119,13 @@ export default function CreatePost() {
 
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+
+            Authorization:
+              `Bearer ${token}`,
+
             "Content-Type":
               "multipart/form-data"
+
           }
         }
 
@@ -97,9 +135,21 @@ export default function CreatePost() {
 
     } catch (err) {
 
-      console.log(err);
+      console.log(
+        err.response?.data || err
+      );
 
-      alert("Failed to create post");
+      alert(
+
+        err.response?.data?.message ||
+
+        "Failed to create post"
+
+      );
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -176,7 +226,8 @@ export default function CreatePost() {
                     style={{
                       margin: "0 auto",
                       maxHeight: 240,
-                      borderRadius: "0.75rem"
+                      borderRadius: "0.75rem",
+                      maxWidth: "100%"
                     }}
                   />
 
@@ -233,7 +284,9 @@ export default function CreatePost() {
             value={caption}
 
             onChange={(e) =>
-              setCaption(e.target.value)
+              setCaption(
+                e.target.value
+              )
             }
 
             rows={3}
@@ -264,7 +317,9 @@ export default function CreatePost() {
             value={song}
 
             onChange={(e) =>
-              setSong(e.target.value)
+              setSong(
+                e.target.value
+              )
             }
 
           />
@@ -290,8 +345,15 @@ export default function CreatePost() {
             <button
               type="submit"
               className="btn-rose"
+              disabled={loading}
             >
-              save memory
+
+              {
+                loading
+                  ? "saving..."
+                  : "save memory"
+              }
+
             </button>
 
           </div>
