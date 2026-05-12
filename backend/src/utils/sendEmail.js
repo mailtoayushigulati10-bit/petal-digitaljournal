@@ -1,25 +1,42 @@
+const nodemailer =
+  require("nodemailer");
 
-const { Resend } = require("resend");
+const transporter =
+  nodemailer.createTransport({
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+    service: "gmail",
 
-const sendOTP = async (email, otp) => {
+    auth: {
+      user:
+        process.env.EMAIL_USER,
 
-  await resend.emails.send({
-
-    from: "onboarding@resend.dev",
-
-    to: email,
-
-    subject: "Petal Email Verification",
-
-    html: `
-      <h2>Your OTP is ${otp}</h2>
-      <p>This OTP expires in 5 minutes.</p>
-    `
+      pass:
+        process.env.EMAIL_PASS
+    }
 
   });
 
-};
+exports.sendOTP =
+  async (email, otp) => {
 
-module.exports = { sendOTP };
+    await transporter.sendMail({
+
+      from:
+        process.env.EMAIL_USER,
+
+      to: email,
+
+      subject:
+        "Your Petal OTP 🌸",
+
+      html: `
+        <div style="font-family:sans-serif">
+          <h2>Your OTP is:</h2>
+          <h1>${otp}</h1>
+          <p>Valid for 5 minutes.</p>
+        </div>
+      `
+
+    });
+
+  };
